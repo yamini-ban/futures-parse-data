@@ -10,14 +10,7 @@ Use the above routes to get the JSON data and parse them in form of case classes
 
 Write utilities to (Data is related)
 
-	- Distribute the data into the different model case classes for a user on the basis of which post and comment done by which user
+	- Distribute the data into the different model case classes for a user on the basis of which
+	    post and comment done by which user
 	- Model data in such a way such that every post has its comments with it
 	- after modeling find the user with most posts, user whose post has most comments
-
-Assignment 2) Create a application in which:
-
-	• Retrieve tweet on the basis of HASHTAG(#hashtag)
-	• HASHTAG must be an input
-	• Find number of tweets
-	• Find average tweets per day
-	• Find average likes and re-tweets per tweet
