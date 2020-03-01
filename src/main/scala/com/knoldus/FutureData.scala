@@ -24,10 +24,10 @@ object CommentAPI extends CommentApi("https://jsonplaceholder.typicode.com/comme
   }
 }
 
-object AppDriver extends App {
+object AppDriver extends App{
 
-  val postWithMaxComments = PostsAPI.getPostWithMaxCommentCount
-  val userWithPostAndMaxCount = UserAPI.getUserWithMaxPostComments
+  val postWithMaxComments: Future[(Long, Int)] = PostsAPI.getPostWithMaxCommentCount
+  val userWithPostAndMaxCount: Future[(String, Long, Int)] = UserAPI.getUserWithMaxPostComments
   Thread.sleep(30 * 1000)
   println(postWithMaxComments + "\n")
   println(userWithPostAndMaxCount)
