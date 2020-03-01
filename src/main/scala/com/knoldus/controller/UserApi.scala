@@ -1,32 +1,27 @@
 package com.knoldus.controller
 
-import com.knoldus.model.{Posts, UserWithPosts, Users}
-import com.knoldus.{CustomException, PostsAPI, UserAPI}
-import net.liftweb.json.{DefaultFormats, parse}
-import org.apache.commons.io.IOUtils
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClientBuilder
+import com.knoldus.model.{CustomException, Posts, UserWithPosts, Users}
+import com.knoldus.{PostsAPI, UserAPI}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class UserApi(val url: String) extends GetDataFromUrl {
+class UserApi(val url: String) extends ParseData[Users] {
 
-  def getListOfParsedUsers: List[Users] = {
-    implicit val format: DefaultFormats.type = DefaultFormats
-    val userData = parse(getDataFromUrl(url))
-    userData.children.map(user => user.extract[Users])
+  def getListOfParsedUsers: Future[List[Users]] = {
+    parseData(url)
   }
 
   def getUserWithMaximumPostsCount: Future[(Long, Int)] = {
     def innerGetUserWithMaximumPostsCount(listOfUsersWithPostCount: List[(Long, Int)]): (Long, Int) = {
       listOfUsersWithPostCount.foldLeft(-1.toLong, -1.toInt)((user1, user2) => {
-          (user1, user2) match {
-            case ((u1, count1), (_, count2)) if count1 > count2 => (u1, count1)
-            case (_, user2WithCount) => user2WithCount
-          }
-        })
+        (user1, user2) match {
+          case ((u1, count1), (_, count2)) if count1 > count2 => (u1, count1)
+          case (_, user2WithCount) => user2WithCount
+        }
+      })
     }
+
     for {
       listOfUsersWithPostCount <- getListOfUsersWithPostCount
     } yield innerGetUserWithMaximumPostsCount(listOfUsersWithPostCount)
@@ -36,8 +31,9 @@ class UserApi(val url: String) extends GetDataFromUrl {
     def innerGetListOfUserWithPostIds(listOfUsersWithPostIds: List[UserWithPosts]): List[(Long, Int)] = {
       listOfUsersWithPostIds.map(oneUserWithAllPostIds => (oneUserWithAllPostIds.user, oneUserWithAllPostIds.posts.length))
     }
+
     for {
-    listOfUsersWithPostIds <- getListOfUsersWithPostIds
+      listOfUsersWithPostIds <- getListOfUsersWithPostIds
     } yield innerGetListOfUserWithPostIds(listOfUsersWithPostIds)
 
   }
@@ -69,7 +65,7 @@ class UserApi(val url: String) extends GetDataFromUrl {
       listOfPosts <- PostsAPI.posts
       postWithMaxCommentCount <- PostsAPI.getPostWithMaxCommentCount
     } yield (getUserWithGivenPostId(listOfUsers, listOfPosts, postWithMaxCommentCount._1).name,
-        postWithMaxCommentCount._1, postWithMaxCommentCount._2)
+      postWithMaxCommentCount._1, postWithMaxCommentCount._2)
   }
 
   private def getUserWithGivenPostId(listOfUsers: List[Users], listOfPosts: List[Posts], postId: Long): Users = {

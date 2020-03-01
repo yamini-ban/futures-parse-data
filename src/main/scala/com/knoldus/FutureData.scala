@@ -7,29 +7,21 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 object UserAPI extends UserApi("https://jsonplaceholder.typicode.com/users") {
-  val users: Future[List[Users]] = Future {
-    UserAPI.getListOfParsedUsers
-  }
+  val users: Future[List[Users]] = UserAPI.getListOfParsedUsers
 }
 
 object PostsAPI extends PostsApi("https://jsonplaceholder.typicode.com/posts") {
-  val posts: Future[List[Posts]] = Future {
-    PostsAPI.getListOfParsedPosts
-  }
+  val posts: Future[List[Posts]] = PostsAPI.getListOfParsedPosts
 }
 
 object CommentAPI extends CommentApi("https://jsonplaceholder.typicode.com/comments") {
-  val comments: Future[List[Comments]] = Future {
+  val comments: Future[List[Comments]] = {
     CommentAPI.getListOfParsedComments
   }
 }
 
-object AppDriver extends App{
+object FutureData {
 
-  val postWithMaxComments: Future[(Long, Int)] = PostsAPI.getPostWithMaxCommentCount
-  val userWithPostAndMaxCount: Future[(String, Long, Int)] = UserAPI.getUserWithMaxPostComments
-  Thread.sleep(30 * 1000)
-  println(postWithMaxComments + "\n")
-  println(userWithPostAndMaxCount)
-
+  val userWithMaxPostCount: Future[Long] = UserAPI.getUserWithMaximumPostsCount.map(_._1)
+  val usernameWithMaxCommentCount: Future[String] = UserAPI.getUserWithMaxPostComments.map(_._1)
 }

@@ -4,9 +4,11 @@ import org.apache.commons.io.IOUtils
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
 
-trait GetDataFromUrl {
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-  def getDataFromUrl(url: String): String = {
+trait GetDataFromUrl {
+  def getDataFromUrl(url: String): Future[String] = Future{
     val request = new HttpGet(url)
     val client = HttpClientBuilder.create().build();
     val response = client.execute(request)
