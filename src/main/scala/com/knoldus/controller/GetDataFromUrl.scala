@@ -4,13 +4,14 @@ import org.apache.commons.io.IOUtils
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
-
 trait GetDataFromUrl {
-  def getDataFromUrl(url: String): Future[String] = Future{
+  def getDataFromUrl(url: String): String
+}
+
+object GetDataFromUrl extends GetDataFromUrl {
+  def getDataFromUrl(url: String): String = {
     val request = new HttpGet(url)
-    val client = HttpClientBuilder.create().build();
+    val client = HttpClientBuilder.create().build()
     val response = client.execute(request)
     IOUtils.toString(response.getEntity.getContent)
   }

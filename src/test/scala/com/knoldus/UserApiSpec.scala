@@ -1,35 +1,61 @@
 package com.knoldus
 
-import com.knoldus.model.UserWithPosts
+import com.knoldus.controller.{PostsApi, UserApi}
+import com.knoldus.model._
+import org.mockito.MockitoSugar
+import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AsyncFlatSpec
 
-class UserApiSpec extends AsyncFlatSpec {
+import scala.concurrent.Future
+
+class UserApiSpec extends AsyncFlatSpec with MockitoSugar with BeforeAndAfterAll {
+
+  val mockedPostApi: PostsApi = mock[PostsApi]
+  var listOfPosts: List[Posts] = _
+  var listOfUser: List[Users] = _
+  var userApi: UserApi = _
+
+  override protected def beforeAll(): Unit = {
+    val post1 = Posts(1, 1, "post1", "description of post1")
+    val post2 = Posts(2, 2, "post2", "description of post2")
+    val post3 = Posts(1, 3, "post3", "description of post3")
+    listOfPosts = List(post1, post2, post3)
+
+    val user1 = Users(1, "user1", "a", "a.a@a.a"
+      , Address("street", "suite", "city", "zip", Geo("lat", "lng"))
+      , "ph", "website", Company("c", "phrase", "bs"))
+    val user2 = Users(2, "user2", "a", "a.a@a.a"
+      , Address("street", "suite", "city", "zip", Geo("lat", "lng"))
+      , "ph", "website", Company("c", "phrase", "bs"))
+    listOfUser = List(user1, user2)
+
+    userApi = new UserApi(Future(listOfUser), mockedPostApi)
+  }
+
+  "getUsers" should "eventually return list of users." in {
+    val expectedResult = Future(listOfUser)
+    val actualResult = userApi.getUsers
+    for(expected <- expectedResult; actual <- actualResult) yield assert(actual == expected)
+  }
 
   "getUserWithMaximumPostsCount " should "eventually return id of user with posts count." in {
-    val expectedResult = (10,10)
-    val obtainedResult = UserAPI.getUserWithMaximumPostsCount
+    when(mockedPostApi.getPosts).thenReturn(Future(listOfPosts))
+    val expectedResult = (1,2)
+    val obtainedResult = userApi.getUserWithMaximumPostsCount
     obtainedResult.map(obResult => assert(expectedResult == obResult))
   }
 
   "getListOfUsersWithPostIds " should "eventually return list of id of user with post ids." in {
-    val expectedResult: List[UserWithPosts] = List(UserWithPosts(1,List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
-      , UserWithPosts(2,List(11, 12, 13, 14, 15, 16, 17, 18, 19, 20))
-      , UserWithPosts(3,List(21, 22, 23, 24, 25, 26, 27, 28, 29, 30))
-      , UserWithPosts(4,List(31, 32, 33, 34, 35, 36, 37, 38, 39, 40))
-      , UserWithPosts(5,List(41, 42, 43, 44, 45, 46, 47, 48, 49, 50))
-      , UserWithPosts(6,List(51, 52, 53, 54, 55, 56, 57, 58, 59, 60))
-      , UserWithPosts(7,List(61, 62, 63, 64, 65, 66, 67, 68, 69, 70))
-      , UserWithPosts(8,List(71, 72, 73, 74, 75, 76, 77, 78, 79, 80))
-      , UserWithPosts(9,List(81, 82, 83, 84, 85, 86, 87, 88, 89, 90))
-      , UserWithPosts(10,List(91, 92, 93, 94, 95, 96, 97, 98, 99, 100))
-    )
-    val obtainedResult = UserAPI.getListOfUsersWithPostIds
+    when(mockedPostApi.getPosts).thenReturn(Future(listOfPosts))
+    val expectedResult: List[UserWithPosts] = List(UserWithPosts(1,List(1, 3)), UserWithPosts(2,List(2)))
+    val obtainedResult = userApi.getListOfUsersWithPostIds
     obtainedResult.map(obResult => assert(expectedResult == obResult))
   }
 
   "getUserWithUserId " should "eventually return user with given userId." in {
-    val expectedResult =  "Clementina DuBuque"
-    val obtainedResult = for(listOfUsers <- UserAPI.users) yield UserAPI.getUserWithUserId(listOfUsers, 10)
+    when(mockedPostApi.getPosts).thenReturn(Future(listOfPosts))
+    val expectedResult =  "user2"
+    val obtainedResult = for(listOfUsers <- userApi.getUsers) yield userApi.getUserWithUserId(listOfUsers, 2)
     val obResult = obtainedResult.map {
       case Some(value) => value.name
       case None => ""
@@ -38,8 +64,10 @@ class UserApiSpec extends AsyncFlatSpec {
   }
 
   "getUserWithUserId " should "eventually return none if case of invalid userId." in {
+    when(mockedPostApi.getPosts).thenReturn(Future(listOfPosts))
     val expectedResult =  ""
-    val obtainedResult = for(listOfUsers <- UserAPI.users) yield UserAPI.getUserWithUserId(listOfUsers, 11)
+    val invalidUserId = 11
+    val obtainedResult = for(listOfUsers <- userApi.getUsers) yield userApi.getUserWithUserId(listOfUsers, invalidUserId)
     val obResult = obtainedResult.map {
       case Some(value) => value.name
       case None => ""
@@ -48,9 +76,25 @@ class UserApiSpec extends AsyncFlatSpec {
   }
 
   "getUserWithMaxPostComments " should "eventually return id of user with maximum comments on a post." in {
-    val expectedResult: (String, Long, Int) = ("Clementina DuBuque", 100, 5)
-    val obtainedResult = UserAPI.getUserWithMaxPostComments
+    val post = Posts(2, 2, "post2", "description of post2")
+    val postWithMaxComments: (Long, Int) = (2,10)
+    when(mockedPostApi.getPosts).thenReturn(Future(listOfPosts))
+    when(mockedPostApi.getPostWithMaxCommentCount).thenReturn(Future(postWithMaxComments))
+    when(mockedPostApi.getPostWithPostId(listOfPosts, 2)).thenReturn(Option(post))
+    val expectedResult: (String, Long, Int) = ("user2", 2, 10)
+    val obtainedResult = userApi.getUserWithMaxPostComments
     obtainedResult.map(obResult => assert(expectedResult == obResult))
+  }
+
+  "getUserWithMaxPostComments " should "eventually throw an exception in case of no user-post association." in {
+    val postWithMaxComments: (Long, Int) = (4,10)
+    when(mockedPostApi.getPosts).thenReturn(Future(listOfPosts))
+    when(mockedPostApi.getPostWithMaxCommentCount).thenReturn(Future(postWithMaxComments))
+    when(mockedPostApi.getPostWithPostId(listOfPosts, 4)).thenReturn(None)
+    val expectedResult: String = ""
+    val obtainedResult = userApi.getUserWithMaxPostComments
+    obtainedResult.map(obResult => assert(expectedResult == obResult._1))
+
   }
 
 }

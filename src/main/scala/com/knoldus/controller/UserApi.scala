@@ -1,15 +1,15 @@
 package com.knoldus.controller
 
-import com.knoldus.model.{CustomException, Posts, UserWithPosts, Users}
-import com.knoldus.{PostsAPI, UserAPI}
+import com.knoldus.Constants
+import com.knoldus.model.{Posts, UserWithPosts, Users}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class UserApi(val url: String) extends ParseData[Users] {
+class UserApi(users: Future[List[Users]], post: PostsApi) {
 
-  def getListOfParsedUsers: Future[List[Users]] = {
-    parseData(url)
+  def getUsers: Future[List[Users]] = {
+    users
   }
 
   def getUserWithMaximumPostsCount: Future[(Long, Int)] = {
@@ -46,8 +46,8 @@ class UserApi(val url: String) extends ParseData[Users] {
     }
 
     for {
-      listOfUsers <- UserAPI.users
-      listOfPosts <- PostsAPI.posts
+      listOfUsers <- users
+      listOfPosts <- post.getPosts
     } yield innerGetListOfUsersWithPostIds(listOfUsers, listOfPosts)
   }
 
@@ -61,22 +61,22 @@ class UserApi(val url: String) extends ParseData[Users] {
 
   def getUserWithMaxPostComments: Future[(String, Long, Int)] = {
     for {
-      listOfUsers <- UserAPI.users
-      listOfPosts <- PostsAPI.posts
-      postWithMaxCommentCount <- PostsAPI.getPostWithMaxCommentCount
+      listOfUsers <- users
+      listOfPosts <- post.getPosts
+      postWithMaxCommentCount <- post.getPostWithMaxCommentCount
     } yield (getUserWithGivenPostId(listOfUsers, listOfPosts, postWithMaxCommentCount._1).name,
       postWithMaxCommentCount._1, postWithMaxCommentCount._2)
   }
 
   private def getUserWithGivenPostId(listOfUsers: List[Users], listOfPosts: List[Posts], postId: Long): Users = {
-    val postWithGivenId = PostsAPI.getPostWithPostId(listOfPosts, postId) match {
+    val postWithGivenId = post.getPostWithPostId(listOfPosts, postId) match {
       case Some(post) => post
       case None => Posts(-1, -1, "", "")
     }
     val userWithGivenUserId = getUserWithUserId(listOfUsers, postWithGivenId.userId)
     userWithGivenUserId match {
       case Some(user) => user
-      case None => throw new CustomException("Something went wrong...")
+      case None => Constants.DefaultUser
     }
   }
 

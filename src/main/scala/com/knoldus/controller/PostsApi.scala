@@ -1,15 +1,14 @@
 package com.knoldus.controller
 
 import com.knoldus.model.{Comments, PostWithComments, Posts}
-import com.knoldus.{CommentAPI, PostsAPI}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class PostsApi(val url: String) extends ParseData[Posts] {
+class PostsApi(posts: Future[List[Posts]], commentApi: CommentApi) {
 
-  def getListOfParsedPosts: Future[List[Posts]] = {
-    parseData(url)
+  def getPosts: Future[List[Posts]] = {
+    posts
   }
 
   def getPostWithMaxCommentCount: Future[(Long, Int)] = {
@@ -23,11 +22,11 @@ class PostsApi(val url: String) extends ParseData[Posts] {
     }
 
     for {
-      listOfPostWithCommentCount <- getListOfPostsWithCommentsCount
+      listOfPostWithCommentCount <- getListOfPostsWithCommentCount
     } yield innerGetPostWithMaxCommentCount(listOfPostWithCommentCount)
   }
 
-  private def getListOfPostsWithCommentsCount: Future[List[(Long, Int)]] = {
+  private def getListOfPostsWithCommentCount: Future[List[(Long, Int)]] = {
     def innerGetListOfPostsWithCommentsCount(listOfPostsWithCommentIds: List[PostWithComments]) = {
       listOfPostsWithCommentIds.map(postWithComment => {
         (postWithComment.postId, postWithComment.comments.length)
@@ -46,8 +45,8 @@ class PostsApi(val url: String) extends ParseData[Posts] {
     }
 
     for {
-      listOfPosts <- PostsAPI.posts
-      listOfComments <- CommentAPI.comments
+      listOfPosts <- posts
+      listOfComments <- commentApi.getComments
     } yield innerGetListOfPostsWithCommentIds(listOfPosts, listOfComments)
 
   }
