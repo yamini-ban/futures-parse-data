@@ -1,5 +1,7 @@
 # futures-parse-data
 
+Solution is in branch feature/json-parsing
+
 Assignment 1) Create an application in which use the following urls
 
 	- https://jsonplaceholder.typicode.com/users
