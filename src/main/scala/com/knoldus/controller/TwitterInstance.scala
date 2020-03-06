@@ -1,8 +1,8 @@
-package com.knoldus
+package com.knoldus.controller
 
 import com.typesafe.config.ConfigFactory
-import twitter4j.{Twitter, TwitterFactory}
 import twitter4j.auth.AccessToken
+import twitter4j.{Twitter, TwitterFactory}
 
 trait TwitterInstance {
   def getTwitterInstance: Twitter

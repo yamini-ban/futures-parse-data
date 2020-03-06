@@ -1,10 +1,13 @@
-package com.knoldus
+package com.knoldus.controller
 
 import java.time.{Period, ZoneId}
 import java.util.Date
 
+import com.knoldus.model.CustomException
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+
 class TwitterController[A <: {def getCreatedAt: Date; def getFavoriteCount: Int; def getRetweetCount: Int}](listOfTweets: Future[List[A]]) {
 
   def getTweetCount: Future[Int] = {

@@ -1,4 +1,4 @@
-package com.knoldus
+package com.knoldus.model
 
 import java.util.Date
 
