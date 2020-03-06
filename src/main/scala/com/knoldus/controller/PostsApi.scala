@@ -7,10 +7,18 @@ import scala.concurrent.Future
 
 class PostsApi(posts: Future[List[Posts]], commentApi: CommentApi) {
 
+  /**
+   *This method gives the list of posts.
+   * @return list of posts.
+   */
   def getPosts: Future[List[Posts]] = {
     posts
   }
 
+  /**
+   * This method gives the id of post with maximum comment count, associated with it.
+   * @return tuple of post id and comment count.
+   */
   def getPostWithMaxCommentCount: Future[(Long, Int)] = {
     def innerGetPostWithMaxCommentCount(listOfPostWithCommentCount: List[(Long, Int)]) = {
       listOfPostWithCommentCount.foldLeft(-1.toLong, -1.toInt)((post1, post2) => {

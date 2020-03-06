@@ -3,6 +3,8 @@ package com.knoldus
 import com.knoldus.model.{Address, Company, Geo, Users}
 
 object Constants {
+
+  val filePath = "./src/test/resources/samplejson.txt"
   val DefaultUser: Users = Users(-1, "", "", ""
     , Address("", "", "", "", Geo("", ""))
     , "", "", Company("", "", ""))

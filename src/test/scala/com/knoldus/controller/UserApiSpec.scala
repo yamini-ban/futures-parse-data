@@ -1,6 +1,5 @@
-package com.knoldus
+package com.knoldus.controller
 
-import com.knoldus.controller.{PostsApi, UserApi}
 import com.knoldus.model._
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterAll

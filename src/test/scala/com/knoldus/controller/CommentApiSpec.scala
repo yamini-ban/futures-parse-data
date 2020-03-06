@@ -1,6 +1,5 @@
-package com.knoldus
+package com.knoldus.controller
 
-import com.knoldus.controller.CommentApi
 import com.knoldus.model.Comments
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterAll
