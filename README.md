@@ -1,6 +1,8 @@
 # futures-parse-data
 
-Solution is in branch feature/json-parsing
+Solution 1 is in branch feature/json-parsing
+
+Solution 2 is in branch feature/twitter
 
 Assignment 1) Create an application in which use the following urls
 
